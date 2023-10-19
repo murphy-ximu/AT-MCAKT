@@ -520,9 +520,10 @@ class EncoderEmbedding(nn.Module):
         # print("lt_s", lt_s)
         # input()
 
-        r = self.response_embed(responses.long())
-        no_res = torch.ones_like(responses).to(Config.device) * 2
-        no_r = self.response_embed(no_res.long())
+        r = self.response_embed(responses.long()) # response 自己的嵌入转换矩阵
+        no_res = torch.ones_like(responses).to(Config.device) * 2 # 与response同型的全为2的tensor
+        no_r = self.response_embed(no_res.long()) # 利用之前的嵌入转换矩阵转换之
+        # 额外写一点，为什么config.n_res=3，应该就是这里指的(0,1)代表错误正确，(2)代表unknown，也即no_response
         seq = torch.arange(self.seq_len, device=Config.device).unsqueeze(0)
         # seq: [[1, 2, 3, 4, ... , seq_len-1]]
         p = self.position_embed(seq)
@@ -546,7 +547,7 @@ class EncoderEmbedding(nn.Module):
             # temp_a_p = torch.split(temp_a_p, self.bsize, dim=0)
 
             # temp_a_p = [self.a_param[exercises[:, 0],:]]  # B_S * 10
-            temp_c = [self.category_embed(categories[:, :, 0])]
+            temp_c = [self.category_embed(categories[:, :, 0])] # 把0修改后，过嵌入层
             # for i in range(1, self.seq_len):
             #     temp_a_p.append(self.a_param[exercises[:, i],:])
             for i in range(1, Config.MAX_CATS_PER):

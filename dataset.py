@@ -97,28 +97,34 @@ class DKTDataset(Dataset):
 
 
 def get_dataloaders(bs=16):
-    train = pd.read_pickle(f"{Config.DATA_FILE_PATH}.train")
-    val = pd.read_pickle(f"{Config.DATA_FILE_PATH}.valid")
+    if Config.VISUAL:
+        # train = pd.read_pickle("../"+f"{Config.DATA_FILE_PATH}.train")
+        # val = pd.read_pickle("../"+f"{Config.DATA_FILE_PATH}.valid")
+        train = pd.read_pickle(f"{Config.DATA_FILE_PATH}.train")
+        val = pd.read_pickle(f"{Config.DATA_FILE_PATH}.valid")
+    else:
+        train = pd.read_pickle(f"{Config.DATA_FILE_PATH}.train")
+        val = pd.read_pickle(f"{Config.DATA_FILE_PATH}.valid")
     train_dataset = DKTDataset(train, max_seq=Config.MAX_SEQ, min_seq=Config.MIN_SEQ)
     val_dataset = DKTDataset(val, max_seq=Config.MAX_SEQ, min_seq=Config.MIN_SEQ)
     train_loader = DataLoader(train_dataset,
                               batch_size=bs,
-                              num_workers=4,
-                              pin_memory=True,
-                              # persistent_workers=True,
+                              num_workers=8,
                               shuffle=True)
     val_loader = DataLoader(val_dataset,
                             batch_size=bs,
-                            num_workers=4,
-                            pin_memory=True,
-                            # persistent_workers=True,
+                            num_workers=8,
                             shuffle=False)
     del train_dataset, val_dataset
     gc.collect()
     return train_loader, val_loader
 
 def get_test_dataloaders(bs=16):
-    test = pd.read_pickle(f"{Config.TEST_FILE_PATH}.test")
+    if Config.VISUAL:
+        # test = pd.read_pickle("../"+f"{Config.TEST_FILE_PATH}.test")
+        test = pd.read_pickle(f"{Config.TEST_FILE_PATH}.test")
+    else:
+        test = pd.read_pickle(f"{Config.TEST_FILE_PATH}.test")
     test_dataset = DKTDataset(test, max_seq=Config.MAX_SEQ, min_seq=Config.MIN_SEQ)
     test_loader = DataLoader(test_dataset,
                               batch_size=bs,
@@ -128,3 +134,23 @@ def get_test_dataloaders(bs=16):
     gc.collect()
     return test_loader
 
+def get_total_dataloaders(bs=16):
+    if Config.VISUAL:
+        # test = pd.read_pickle("../"+f"{Config.TEST_FILE_PATH}.test")
+        test = pd.read_pickle(f"{Config.TEST_FILE_PATH}.test")
+        train = pd.read_pickle(f"{Config.DATA_FILE_PATH}.train")
+        val = pd.read_pickle(f"{Config.DATA_FILE_PATH}.valid")
+    else:
+        test = pd.read_pickle(f"{Config.TEST_FILE_PATH}.test")
+        train = pd.read_pickle(f"{Config.DATA_FILE_PATH}.train")
+        val = pd.read_pickle(f"{Config.DATA_FILE_PATH}.valid")
+    total =  pd.concat([train,val])
+    total = pd.concat([total, test])
+    total_dataset = DKTDataset(total, max_seq=Config.MAX_SEQ, min_seq=Config.MIN_SEQ)
+    total_loader = DataLoader(total_dataset,
+                             batch_size=bs,
+                             num_workers=8,
+                             shuffle=False)
+    del total_dataset
+    gc.collect()
+    return total_loader
